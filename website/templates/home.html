@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+
+{% block titre %}
+    Home page
+{% endblock %}
+
+{% block body %}
+    <p>Lorem ipsum dolor sit amet</p>
+
+    <ul>
+        {% for url in urls %}
+            <li>{{ url.0 }}, statut code : {{ url.2 }}, message "{{ url.3 }}"</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
