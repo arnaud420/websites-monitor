@@ -5,11 +5,12 @@
 {% endblock %}
 
 {% block body %}
-    <p>Lorem ipsum dolor sit amet</p>
+	<h1>Websites Monitor</h1>
+    <h2>Website list</h2>
 
     <ul>
         {% for url in urls %}
-            <li>{{ url.0 }}, statut code : {{ url.2 }}, message "{{ url.3 }}"</li>
+            <li><a target="_blank" href="{{ url.1 }}">{{ url.1 }}</a>, statut code : {{ url.2 }}, message "{{ url.3 }}" <a href="{{ url_for('show_website', website = url.0) }}">Voir</a></li>
         {% endfor %}
     </ul>
 {% endblock %}

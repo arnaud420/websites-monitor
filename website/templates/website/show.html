@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block titre %}
+    {{ website.1 }}
+{% endblock %}
+
+{% block body %}
+	<h1>
+		<a href="{{ website.1 }}" target="_blank">{{ website.1 }}</a>
+	</h1>
+
+	<h2>Statut log</h2>
+
+	{% for historical in historicals %}
+		<p>{{ historical }}</p>
+	{% endfor %}
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'layout.html' %}
+
+{% block titre %}
+    add website
+{% endblock %}
+
+{% block body %}
+	<h1>{{ message }} !</h1>
+
+	<a href="{{ url_for('admin') }}">Back to admin</a>
+{% endblock %}

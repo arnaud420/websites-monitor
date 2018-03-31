@@ -7,4 +7,34 @@
 {% block body %}
 	<h1>Page admin</h1>
 	<h2>hello {{ user.0 }}</h2>
+
+	<div class="container">
+
+		<a href="{{ url_for('add_website') }}" class="button button-outline">add new website</a>
+
+		<table>
+		  <thead>
+		    <tr>
+		      <th>Website url</th>
+		      <th>Statut code</th>
+		      <th>Message</th>
+		      <th></th>
+		      <th></th>
+		    </tr>
+		  </thead>
+		  <tbody>
+		  	{% for url in urls %}
+			    <tr>
+			      <td>{{url.1}}</td>
+			      <td>{{url.2}}</td>
+			      <td>{{url.3}}</td>
+			      <td><a href="{{ url_for('update_website', website = url.0) }}" class="button button-clear">Update</a></td>
+			      <td><a href="{{ url_for('delete_website', website = url.0) }}" class="button button-clear">Delete</a></td>
+			    </tr>
+		    {% endfor %}
+		    </tr>
+		  </tbody>
+		</table>
+	</div>
+
 {% endblock %}

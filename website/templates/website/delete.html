@@ -1,0 +1,14 @@
+{% extends 'layout.html' %}
+
+{% block titre %}
+    delete website
+{% endblock %}
+
+{% block body %}
+	<h1>Are you sur to delete {{ url.0 }} ?</h1>
+
+	<form action="" method="POST">
+		<input type="hidden" name="id" id="website-id">
+		<input type="submit" value="I'm sure" class="button-primary" />
+    </form>
+{% endblock %}

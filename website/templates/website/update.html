@@ -1,0 +1,18 @@
+{% extends 'layout.html' %}
+
+{% block titre %}
+    updatewebsite
+{% endblock %}
+
+{% block body %}
+	<h1>update website {{ url.0 }}</h1>
+
+	<div class="container">
+		<form action="" method="POST">
+            <input placeholder="Write your new website url" type="text" name="url" id="url" />
+
+            <input type="submit" value="Send" class="button-primary" />
+    	</form>
+
+	</div>
+{% endblock %}
