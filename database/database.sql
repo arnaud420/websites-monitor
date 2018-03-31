@@ -11,21 +11,23 @@ CREATE TABLE users(
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET = utf8;
 
-DROP TABLE IF EXISTS status;
-CREATE TABLE status(
-	id INT AUTO_INCREMENT NOT NULL,
+DROP TABLE IF EXISTS websites;
+CREATE TABLE websites(
+    id INT AUTO_INCREMENT NOT NULL,
+    url VARCHAR(50) NOT NULL,
     code INT NOT NULL,
     message VARCHAR(50) NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET = utf8;
 
-DROP TABLE IF EXISTS websites;
-CREATE TABLE websites(
+DROP TABLE IF EXISTS historicals;
+CREATE TABLE historicals(
     id INT AUTO_INCREMENT NOT NULL,
-    url VARCHAR(50) NOT NULL,
-    statut_id INT,
+    message VARCHAR(50) NOT NULL,
+    update_date VARCHAR(50) NOT NULL,
+    website_id INT NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (statut_id) REFERENCES status(id)
+    FOREIGN KEY (website_id) REFERENCES websites(id)
 ) ENGINE=InnoDB DEFAULT CHARSET = utf8;
 
 INSERT INTO users (name, email, password, is_admin) VALUES (
