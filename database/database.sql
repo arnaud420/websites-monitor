@@ -27,7 +27,7 @@ CREATE TABLE historicals(
     update_date VARCHAR(50) NOT NULL,
     website_id INT NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (website_id) REFERENCES websites(id)
+    FOREIGN KEY (website_id) REFERENCES websites(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET = utf8;
 
 INSERT INTO users (name, email, password, is_admin) VALUES (
