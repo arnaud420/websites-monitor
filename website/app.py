@@ -56,21 +56,29 @@ def get_code_statut_from(url):
 	except:
 		return 999, "Could not reach the server"
 
-# Infinite loop for check the http request code on each row in websites table.
-# Then insert the http request code with a date in historicals table.
-"""def check_websites_statut():
-	while True:
-		mysql_cursor.execute("SELECT id, url, code, message FROM websites")
-		websites = mysql_cursor.fetchall()
-		for website in websites:
-			print(website)
-			url = website[1]
-			update_date = time.asctime( time.localtime(time.time()) )
-			code, message = get_code_statut_from(url)
-			mysql_cursor.execute("INSERT INTO historicals (message, update_date, website_id) VALUES ('%s', '%s', (SELECT id from websites WHERE id = '%s'))" % (message, update_date, website[0]))
-			mysql_connection.commit()
-			print(mysql_cursor.rowcount)
-		time.sleep(120)"""
+# Infinite loop for check the http request return on each row in websites table every 120s
+# Then insert the http request message with a date in historicals table
+def check_websites_statut():
+	def loop():
+		while True:
+			with app.app_context():
+				db, cursor = get_db_and_cursor()
+				try:
+					cursor.execute("SELECT id, url, code, message FROM websites")
+					websites = cursor.fetchall()
+					for website in websites:
+						print(website)
+						url = website[1]
+						website_id = website[0]
+						update_date = time.asctime( time.localtime(time.time()) )
+						code, message = get_code_statut_from(url)
+						cursor.execute("INSERT INTO historicals (message, update_date, website_id) VALUES ('%s', '%s', (SELECT id from websites WHERE id = '%s'))" % (message, update_date, website_id))
+						db.commit()
+					db.close()
+					time.sleep(120)
+				except Exception as error:
+					print("ERROR : ", error)
+	loop()
 
 ########################################
 #				ROUTES				   #
@@ -160,6 +168,7 @@ def update_website(website):
 	cursor.execute("SELECT url FROM websites WHERE id = ('%s')" % (website))
 	url = cursor.fetchone()
 	if url == None:
+		db.close()
 		return redirect(url_for('error404'))
 	if request.method == 'POST':
 		form_url = request.form.get('url')
@@ -182,6 +191,7 @@ def delete_website(website):
 	cursor.execute("SELECT url FROM websites WHERE id = ('%s')" % (website))
 	url = cursor.fetchone()
 	if url == None:
+		db.close()
 		return redirect(url_for('error404'))
 	if request.method == 'POST':
 		cursor.execute("DELETE FROM websites WHERE id = ('%s')" % (website))
@@ -197,8 +207,9 @@ def error404():
 
 
 # Start the check_websites_statut() function in a new thread
-#_thread.start_new_thread(check_websites_statut, ())
+_thread.start_new_thread(check_websites_statut, ())
 
 # Start web app
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+	# use_reloader=False is for avoid running the loop in thread twice
+	app.run(debug=True, host='0.0.0.0', use_reloader=False)
