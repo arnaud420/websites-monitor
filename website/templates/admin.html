@@ -5,36 +5,39 @@
 {% endblock %}
 
 {% block body %}
-	<h1>Page admin</h1>
-	<h2>hello {{ user.0 }}</h2>
+	<h1 class="text-center">Hi {{ user.0 }}</h1>
 
 	<div class="container">
 
-		<a href="{{ url_for('add_website') }}" class="button button-outline">add new website</a>
+		<a href="{{ url_for('add_website') }}" class="btn btn-success float-right">add new website</a>
 
-		<table>
-		  <thead>
-		    <tr>
-		      <th>Website url</th>
-		      <th>Statut code</th>
-		      <th>Message</th>
-		      <th></th>
-		      <th></th>
-		    </tr>
-		  </thead>
-		  <tbody>
-		  	{% for url in urls %}
-			    <tr>
-			      <td>{{url.1}}</td>
-			      <td>{{url.2}}</td>
-			      <td>{{url.3}}</td>
-			      <td><a href="{{ url_for('update_website', website = url.0) }}" class="button button-clear">Update</a></td>
-			      <td><a href="{{ url_for('delete_website', website = url.0) }}" class="button button-clear">Delete</a></td>
-			    </tr>
-		    {% endfor %}
-		    </tr>
-		  </tbody>
-		</table>
+		<div class="table-responsive">
+			<table class="table table-striped">
+			  <thead>
+				<tr>
+				  <th>#</th>
+				  <th>Website url</th>
+				  <th>Statut code</th>
+				  <th>Message</th>
+				  <th></th>
+				  <th></th>
+				</tr>
+			  </thead>
+			  <tbody>
+				{% for url in urls %}
+					<tr>
+					  <td>{{url.0}}</td>
+					  <td>{{url.1}}</td>
+					  <td>{{url.2}}</td>
+					  <td>{{url.3}}</td>
+					  <td><a href="{{ url_for('update_website', website = url.0) }}" class="btn btn-outline-warning">Update</a></td>
+					  <td><a href="{{ url_for('delete_website', website = url.0) }}" class="btn btn-outline-danger">Delete</a></td>
+					</tr>
+				{% endfor %}
+				</tr>
+			  </tbody>
+			</table>
+		</div>
 	</div>
 
 {% endblock %}

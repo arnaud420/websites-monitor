@@ -5,14 +5,24 @@
 {% endblock %}
 
 {% block body %}
-	<h1>update website {{ url.0 }}</h1>
+	<h1 class="text-center">Update website {{ url.0 }}</h1>
 
-	<div class="container">
+	<div class="container text-center">
 		<form action="" method="POST">
-            <input placeholder="Write your new website url" type="text" name="url" id="url" />
-
-            <input type="submit" value="Send" class="button-primary" />
+			<div class="form-group">
+            	<input class="form-control" placeholder="Write your new website url" type="text" name="url" id="url" />
+            </div>
+            <button type="submit" class="btn btn-warning">Submit</button>
     	</form>
 
+    	{% with messages = get_flashed_messages() %}
+		  {% if messages %}
+		    <ul class=flashes>
+		    {% for message in messages %}
+		      <li>{{ message }}</li>
+		    {% endfor %}
+		    </ul>
+		  {% endif %}
+		{% endwith %}
 	</div>
 {% endblock %}

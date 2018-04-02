@@ -5,13 +5,14 @@
 {% endblock %}
 
 {% block body %}
-	<h1>
+	<h1 class="text-center">
 		<a href="{{ website.1 }}" target="_blank">{{ website.1 }}</a>
 	</h1>
 
-	<h2>Statut log</h2>
-
-	{% for historical in historicals %}
+	<section>
+		<h2>Statut log</h2>
+		{% for historical in historicals %}
 		<p>{{ historical }}</p>
-	{% endfor %}
+		{% endfor %}
+	</section>
 {% endblock %}

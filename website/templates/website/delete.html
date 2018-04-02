@@ -5,10 +5,12 @@
 {% endblock %}
 
 {% block body %}
-	<h1>Are you sur to delete {{ url.0 }} ?</h1>
+	<h1 class="text-center">Are you sur to delete {{ url.0 }} ?</h1>
 
-	<form action="" method="POST">
-		<input type="hidden" name="id" id="website-id">
-		<input type="submit" value="I'm sure" class="button-primary" />
-    </form>
+	<div class="container text-center">
+		<form action="" method="POST">
+			<input type="hidden" name="id" id="website-id">
+			<button type="submit" class="btn btn-danger" >I'm sure</button>
+	    </form>
+	</div>
 {% endblock %}

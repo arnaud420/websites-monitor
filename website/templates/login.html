@@ -5,20 +5,20 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Connexion</h1>
+<div class="container">
+    <h1>Login</h1>
     <form action="" method="POST">
-        <fieldset>
-            <label for="email">Email :</label><br/>
-            <input type="text" name="email" id="email" /><br/><br/>
+        <div class="form-group">
+            <label for="email">Email address</label>
+            <input class="form-text text-muted form-control" type="text" name="email" id="email" aria-describedby="emailHelp" placeholder="Enter email"/>
+            <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+        </div>
 
-            <label for="password">Password :</label><br/>
-            <input type="password" name="password" id="password" /><br/><br/>
-
-            <input type="submit" value="Connecter"/>
-        </fieldset>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" class="form-control" placeholder="Password" />
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
     </form>
-
-    {% if user %}
-        Bonjour {{ user.0 }}, vous êtes bien connecté !
-    {% endif %}
+</div>
 {% endblock %}
