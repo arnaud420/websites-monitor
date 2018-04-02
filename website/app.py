@@ -1,7 +1,7 @@
 #! /usr/bin/python3.6
 # -*- coding:utf-8 -*-
 
-from flask import Flask, render_template, url_for, request, g, redirect, session
+from flask import Flask, render_template, url_for, request, g, redirect, session, flash
 import mysql.connector
 from passlib.hash import argon2
 import requests as R
@@ -67,12 +67,12 @@ def check_websites_statut():
 					cursor.execute("SELECT id, url, code, message FROM websites")
 					websites = cursor.fetchall()
 					for website in websites:
-						print(website)
 						url = website[1]
 						website_id = website[0]
 						update_date = time.asctime( time.localtime(time.time()) )
 						code, message = get_code_statut_from(url)
 						cursor.execute("INSERT INTO historicals (message, update_date, website_id) VALUES ('%s', '%s', (SELECT id from websites WHERE id = '%s'))" % (message, update_date, website_id))
+						cursor.execute("UPDATE websites SET url=('%s'), code=('%s'), message=('%s') WHERE id = ('%s')" % (url, code, message, website_id))
 						db.commit()
 					db.close()
 					time.sleep(120)
@@ -140,6 +140,8 @@ def admin() :
 
 @app.route('/admin/website/add/', methods=['GET', 'POST'])
 def add_website():
+	if not session.get('user') or not session.get('user')[2] :
+		return redirect(url_for('login'))
 	if request.method == 'POST':
 		url = request.form.get('url')
 		if url != '':
@@ -156,6 +158,8 @@ def add_website():
 
 			except Exception as error:
 				print('Failed to insert data :', error)
+		else:
+			flash("Field can't be empty")
 	return render_template('website/add.html')
 
 @app.route('/success/<message>')
@@ -164,6 +168,8 @@ def success(message):
 
 @app.route('/admin/website/<int:website>/update/', methods=['GET', 'POST'])
 def update_website(website):
+	if not session.get('user') or not session.get('user')[2] :
+		return redirect(url_for('login'))
 	db, cursor = get_db_and_cursor()
 	cursor.execute("SELECT url FROM websites WHERE id = ('%s')" % (website))
 	url = cursor.fetchone()
@@ -172,7 +178,7 @@ def update_website(website):
 		return redirect(url_for('error404'))
 	if request.method == 'POST':
 		form_url = request.form.get('url')
-		if url != '':
+		if form_url != '':
 			try:
 				code, message = get_code_statut_from(form_url)
 				cursor.execute("UPDATE websites SET url=('%s'), code=('%s'), message=('%s') WHERE id = ('%s')" % (form_url, code, message, website))
@@ -180,13 +186,16 @@ def update_website(website):
 				db.close()
 				success_message = "Row update with success"
 				return redirect(url_for('success', message = success_message))
-
 			except Exception as error:
 				print('Failed to update data :', error)
+		else:
+			flash("Field can't be empty")
 	return render_template('website/update.html', website = website, url = url)
 
 @app.route('/admin/website/<int:website>/delete/', methods=['GET', 'POST'])
 def delete_website(website):
+	if not session.get('user') or not session.get('user')[2] :
+		return redirect(url_for('login'))
 	db, cursor = get_db_and_cursor()
 	cursor.execute("SELECT url FROM websites WHERE id = ('%s')" % (website))
 	url = cursor.fetchone()
