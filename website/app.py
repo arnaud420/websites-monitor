@@ -45,6 +45,15 @@ def sendToTelegram(message):
 	except Exception as e:
 		return e
 
+def sendToSlack(message):
+	url = app.config['SLACK_WEBHOOK']
+	content = {"text":"{}".format(message)}
+	try:
+		req = R.post(url, json=content)
+		return req
+	except Exception as e:
+		return e
+
 # Return the http request code with it message from a url
 def get_code_statut_from(url):
 	try:
@@ -97,7 +106,10 @@ def check_websites_statut():
 
 							if website_counter >= 3:
 								#hour = time.strftime("%H")
-								sendToTelegram("[HTTP: {}] on website url => {} ".format(code, url))
+								message_content = "[HTTP: {}] on website url => {} ".format(code, url)
+								sendToTelegram(message_content)
+								sendToSlack(message_content)
+								
 								cursor.execute("UPDATE websites SET counter=('%s') WHERE id = ('%s')" % (0, website_id))
 								db.commit()
 
