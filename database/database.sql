@@ -17,6 +17,7 @@ CREATE TABLE websites(
     url VARCHAR(50) NOT NULL,
     code INT NOT NULL,
     message VARCHAR(50) NOT NULL,
+    counter INT,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET = utf8;
 
