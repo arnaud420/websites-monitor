@@ -34,6 +34,16 @@ def get_db_and_cursor() :
 ########################################
 #			  FUNCTIONS				   #
 ########################################
+def sendToTelegram(message):
+	chat_id = app.config['TELEGRAM_CHAT_ID']
+	token = app.config['TELEGRAM_TOKEN']
+	url = "https://api.telegram.org/bot{}/".format(token)
+	url_with_msg = url + "sendMessage?chat_id={}&text={}".format(chat_id, message)
+	try:
+		req = R.get(url_with_msg)
+		return req
+	except Exception as e:
+		return e
 
 # Return the http request code with it message from a url
 def get_code_statut_from(url):
@@ -64,18 +74,36 @@ def check_websites_statut():
 			with app.app_context():
 				db, cursor = get_db_and_cursor()
 				try:
-					cursor.execute("SELECT id, url, code, message FROM websites")
+					# fetch websites data
+					cursor.execute("SELECT id, url, code, message, counter FROM websites")
 					websites = cursor.fetchall()
+
 					for website in websites:
-						url = website[1]
+
 						website_id = website[0]
+						url = website[1]
+						website_counter = website[4]
 						update_date = time.asctime( time.localtime(time.time()) )
 						code, message = get_code_statut_from(url)
+
 						cursor.execute("INSERT INTO historicals (message, update_date, website_id) VALUES ('%s', '%s', (SELECT id from websites WHERE id = '%s'))" % (message, update_date, website_id))
 						cursor.execute("UPDATE websites SET url=('%s'), code=('%s'), message=('%s') WHERE id = ('%s')" % (url, code, message, website_id))
 						db.commit()
+
+						if code != 200:
+							website_counter+=1
+							cursor.execute("UPDATE websites SET counter=('%s') WHERE id = ('%s')" % (website_counter, website_id))
+							db.commit()
+
+							if website_counter >= 3:
+								#hour = time.strftime("%H")
+								sendToTelegram("[HTTP: {}] on website url => {} ".format(code, url))
+								cursor.execute("UPDATE websites SET counter=('%s') WHERE id = ('%s')" % (0, website_id))
+								db.commit()
+
 					db.close()
-					time.sleep(120)
+					time.sleep(30)
+
 				except Exception as error:
 					print("ERROR : ", error)
 	loop()
