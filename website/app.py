@@ -23,13 +23,21 @@ def connect_db():
 		password = app.config['DATABASE_PASSWORD'],
 		database = app.config['DATABASE_NAME']
 	)
-	return g.mysql_connection
+	g.mysql_cursor = g.mysql_connection.cursor()
+	return g.mysql_cursor
 
-def get_db_and_cursor() :
+def get_db () :
     if not hasattr(g, 'db') :
         g.db = connect_db()
-        g.cursor = g.db.cursor()
-    return g.db, g.cursor
+    return g.db
+
+def commit():
+	g.mysql_connection.commit()
+
+@app.teardown_appcontext
+def close_db (error) :
+    if hasattr(g, 'db') :
+        g.db.close()
 
 ########################################
 #			  FUNCTIONS				   #
@@ -86,10 +94,10 @@ def check_websites_statut():
 	def loop():
 		while True:
 			with app.app_context():
-				db, cursor = get_db_and_cursor()
+				db = get_db()
 				try:
-					cursor.execute("SELECT id, url, counter, message_time FROM websites")
-					websites = cursor.fetchall()
+					db.execute("SELECT id, url, counter, message_time FROM websites")
+					websites = db.fetchall()
 
 					for website in websites:
 
@@ -101,24 +109,25 @@ def check_websites_statut():
 						code, message = get_code_statut_from(url)
 
 						# insert an historical of each website statut
-						cursor.execute("INSERT INTO historicals (message, update_date, website_id) VALUES ('%s', '%s', (SELECT id from websites WHERE id = '%s'))" % (message, update_date, website_id))
+						db.execute("INSERT INTO historicals (message, update_date, website_id) VALUES ('%s', '%s', (SELECT id from websites WHERE id = '%s'))" % (message, update_date, website_id))
 						# update website with the current http code return
-						cursor.execute("UPDATE websites SET url=('%s'), code=('%s'), message=('%s') WHERE id = ('%s')" % (url, code, message, website_id))
-						db.commit()
+						db.execute("UPDATE websites SET url=('%s'), code=('%s'), message=('%s') WHERE id = ('%s')" % (url, code, message, website_id))
+						commit()
 
 						if code != 200:
 
 							now = int(time.time())
-							two_hours = 7200
+							two_hours = 780
+							#7200
 							two_hours_from_last_message = message_time + two_hours
 							website_counter+=1
-							cursor.execute("UPDATE websites SET counter=('%s') WHERE id = ('%s')" % (website_counter, website_id))
-							db.commit()
+							db.execute("UPDATE websites SET counter=('%s') WHERE id = ('%s')" % (website_counter, website_id))
+							commit()
 
 							if website_counter >= 3 and now >= two_hours_from_last_message:
 								
-								cursor.execute("UPDATE websites SET counter=('%s'), message_time=('%s') WHERE id = ('%s')" % (0, now, website_id))
-								db.commit()
+								db.execute("UPDATE websites SET counter=('%s'), message_time=('%s') WHERE id = ('%s')" % (0, now, website_id))
+								commit()
 								message_content = "[HTTP: {}] on website url => {} ".format(code, url)
 								sendAllMessages(message_content)
 
@@ -135,19 +144,19 @@ def check_websites_statut():
 
 @app.route('/')
 def home():
-	db, cursor = get_db_and_cursor()
-	cursor.execute("SELECT id, url, code, message FROM websites")
-	websites = cursor.fetchall()
+	db = get_db()
+	db.execute("SELECT id, url, code, message FROM websites")
+	websites = db.fetchall()
 	db.close()
 	return render_template('home.html', websites = websites)
 
 @app.route('/login/', methods = ['GET', 'POST'])
 def login():
-	db, cursor = get_db_and_cursor()
+	db = get_db()
 	email = str(request.form.get('email'))
 	password = str(request.form.get('password'))
-	cursor.execute('SELECT name, email, password, is_admin FROM users WHERE email = %(email)s', {'email' : email})
-	users = cursor.fetchall()
+	db.execute('SELECT name, email, password, is_admin FROM users WHERE email = %(email)s', {'email' : email})
+	users = db.fetchall()
 	db.close()
 	valid_user = False
 	for user in users :
@@ -165,14 +174,14 @@ def logout():
 
 @app.route('/website/<int:website>/')
 def show_website(website):
-	db, cursor = get_db_and_cursor()
-	cursor.execute("SELECT id, url, code, message FROM websites WHERE id = ('%s')" % (website))
-	url = cursor.fetchone()
+	db = get_db()
+	db.execute("SELECT id, url, code, message FROM websites WHERE id = ('%s')" % (website))
+	url = db.fetchone()
 	if url == None:
 		return redirect(url_for('error404'))
 	else:
-		cursor.execute("SELECT message, update_date FROM historicals WHERE website_id = ('%s') ORDER BY id DESC" % (website))
-		historicals = cursor.fetchall()
+		db.execute("SELECT message, update_date FROM historicals WHERE website_id = ('%s') ORDER BY id DESC" % (website))
+		historicals = db.fetchall()
 	db.close()
 
 	return render_template('/website/show.html', website = url, historicals = historicals)
@@ -181,9 +190,9 @@ def show_website(website):
 def admin() :
     if not session.get('user') or not session.get('user')[2] :
         return redirect(url_for('login'))
-    db, cursor = get_db_and_cursor()
-    cursor.execute("SELECT id, url, code, message FROM websites")
-    urls = cursor.fetchall()
+    db = get_db()
+    db.execute("SELECT id, url, code, message FROM websites")
+    urls = db.fetchall()
     db.close()
     return render_template('admin.html', user = session['user'], urls = urls)
 
@@ -196,14 +205,12 @@ def add_website():
 		if url != '':
 			try:
 				code, message = get_code_statut_from(url)
-				db, cursor = get_db_and_cursor()
-				cursor.execute("INSERT INTO websites (url, code, message) VALUES ('%s', '%s', '%s')" % (url, code, message))
-				
-				if (cursor.rowcount == 1):
-					db.commit()
-					db.close()
-					success_message = "Row added with success"
-					return redirect(url_for('success', message = success_message))
+				db = get_db()
+				db.execute("INSERT INTO websites (url, code, message) VALUES ('%s', '%s', '%s')" % (url, code, message))
+				commit()
+				db.close()
+				success_message = "Row added with success"
+				return redirect(url_for('success', message = success_message))
 
 			except Exception as error:
 				print('Failed to insert data :', error)
@@ -219,9 +226,9 @@ def success(message):
 def update_website(website):
 	if not session.get('user') or not session.get('user')[2] :
 		return redirect(url_for('login'))
-	db, cursor = get_db_and_cursor()
-	cursor.execute("SELECT url FROM websites WHERE id = ('%s')" % (website))
-	url = cursor.fetchone()
+	db = get_db()
+	db.execute("SELECT url FROM websites WHERE id = ('%s')" % (website))
+	url = db.fetchone()
 	if url == None:
 		db.close()
 		return redirect(url_for('error404'))
@@ -230,8 +237,8 @@ def update_website(website):
 		if form_url != '':
 			try:
 				code, message = get_code_statut_from(form_url)
-				cursor.execute("UPDATE websites SET url=('%s'), code=('%s'), message=('%s') WHERE id = ('%s')" % (form_url, code, message, website))
-				db.commit()
+				db.execute("UPDATE websites SET url=('%s'), code=('%s'), message=('%s') WHERE id = ('%s')" % (form_url, code, message, website))
+				commit()
 				db.close()
 				success_message = "Row update with success"
 				return redirect(url_for('success', message = success_message))
@@ -245,15 +252,15 @@ def update_website(website):
 def delete_website(website):
 	if not session.get('user') or not session.get('user')[2] :
 		return redirect(url_for('login'))
-	db, cursor = get_db_and_cursor()
-	cursor.execute("SELECT url FROM websites WHERE id = ('%s')" % (website))
-	url = cursor.fetchone()
+	db = get_db()
+	db.execute("SELECT url FROM websites WHERE id = ('%s')" % (website))
+	url = db.fetchone()
 	if url == None:
 		db.close()
 		return redirect(url_for('error404'))
 	if request.method == 'POST':
-		cursor.execute("DELETE FROM websites WHERE id = ('%s')" % (website))
-		db.commit()
+		db.execute("DELETE FROM websites WHERE id = ('%s')" % (website))
+		commit()
 		db.close()
 		success_message = "Row deleted with success"
 		return redirect(url_for('success', message = success_message))
