@@ -7,15 +7,20 @@
 {% block body %}
 
     <section class="container">
-    	<h2 class="text-center">Website list</h2>
+    	<h2 class="text-center section">Website list</h2>
     	<div class="row justify-content-center">
     	{% for website in websites %}
-    		<div class="card text-center col-12 col-md-3" style="margin: 10px">
+    		<div class="card text-center col-12 col-md-5" style="margin: 10px">
     			<div class="card-body">
 				    <h5 class="card-title"><a target="_blank" href="{{ website.1 }}">{{ website.1 }}</a></h5>
 					<p class="card-text">
-				    	<span>{{ website.2 }}</span><br>
-				    	<span>"{{ website.3 }}"</span>
+                        {% if website.3 != "Accessible" %}
+                            <strong class="red">{{ website.2 }}</strong><br>
+                            <span class="red">"{{ website.3 }}"</span>
+                        {% else %}
+                            <strong class="green">{{ website.2 }}</strong><br>
+                            <span class="green">"{{ website.3 }}"</span>
+                        {% endif %}
 				    </p>
 				    <a href="{{ url_for('show_website', website = website.0) }}" class="btn btn-primary">Check</a>
 			  	</div>

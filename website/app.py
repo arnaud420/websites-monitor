@@ -54,6 +54,10 @@ def sendToSlack(message):
 	except Exception as e:
 		return e
 
+def sendAllMessages(message):
+	sendToTelegram(message)
+	sendToSlack(message)
+
 # Return the http request code with it message from a url
 def get_code_statut_from(url):
 	try:
@@ -76,45 +80,50 @@ def get_code_statut_from(url):
 		return 999, "Could not reach the server"
 
 # Infinite loop for check the http request return on each row in websites table every 120s
-# Then insert the http request message with a date in historicals table
+# Then insert the http request message with a date in historicals table 
+# Send messages to telegram and slack if the return http code is not 200 for 3 times
 def check_websites_statut():
 	def loop():
 		while True:
 			with app.app_context():
 				db, cursor = get_db_and_cursor()
 				try:
-					# fetch websites data
-					cursor.execute("SELECT id, url, code, message, counter FROM websites")
+					cursor.execute("SELECT id, url, counter, message_time FROM websites")
 					websites = cursor.fetchall()
 
 					for website in websites:
 
 						website_id = website[0]
 						url = website[1]
-						website_counter = website[4]
+						website_counter = website[2]
+						message_time = website[3]
 						update_date = time.asctime( time.localtime(time.time()) )
 						code, message = get_code_statut_from(url)
 
+						# insert an historical of each website statut
 						cursor.execute("INSERT INTO historicals (message, update_date, website_id) VALUES ('%s', '%s', (SELECT id from websites WHERE id = '%s'))" % (message, update_date, website_id))
+						# update website with the current http code return
 						cursor.execute("UPDATE websites SET url=('%s'), code=('%s'), message=('%s') WHERE id = ('%s')" % (url, code, message, website_id))
 						db.commit()
 
 						if code != 200:
+
+							now = int(time.time())
+							two_hours = 7200
+							two_hours_from_last_message = message_time + two_hours
 							website_counter+=1
 							cursor.execute("UPDATE websites SET counter=('%s') WHERE id = ('%s')" % (website_counter, website_id))
 							db.commit()
 
-							if website_counter >= 3:
-								#hour = time.strftime("%H")
-								message_content = "[HTTP: {}] on website url => {} ".format(code, url)
-								sendToTelegram(message_content)
-								sendToSlack(message_content)
+							if website_counter >= 3 and now >= two_hours_from_last_message:
 								
-								cursor.execute("UPDATE websites SET counter=('%s') WHERE id = ('%s')" % (0, website_id))
+								cursor.execute("UPDATE websites SET counter=('%s'), message_time=('%s') WHERE id = ('%s')" % (0, now, website_id))
 								db.commit()
+								message_content = "[HTTP: {}] on website url => {} ".format(code, url)
+								sendAllMessages(message_content)
 
 					db.close()
-					time.sleep(30)
+					time.sleep(120)
 
 				except Exception as error:
 					print("ERROR : ", error)

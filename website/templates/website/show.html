@@ -5,14 +5,21 @@
 {% endblock %}
 
 {% block body %}
-	<h1 class="text-center">
+	<h1 class="text-center section">
 		<a href="{{ website.1 }}" target="_blank">{{ website.1 }}</a>
 	</h1>
 
-	<section>
+	<section class="text-center">
 		<h2>Statut log</h2>
 		{% for historical in historicals %}
-		<p>{{ historical }}</p>
+			<p>
+				{% if historical.0 != "Accessible" %}
+				<strong class="red">{{ historical.0 }}</strong> 
+				{% else %}
+				<strong class="green">{{ historical.0 }}</strong> 
+				{% endif %}
+				at {{ historical.1 }}
+			</p>
 		{% endfor %}
 	</section>
 {% endblock %}

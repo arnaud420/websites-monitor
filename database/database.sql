@@ -17,7 +17,8 @@ CREATE TABLE websites(
     url VARCHAR(50) NOT NULL,
     code INT NOT NULL,
     message VARCHAR(50) NOT NULL,
-    counter INT,
+    counter INT DEFAULT 0,
+    message_time INT DEFAULT 0,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET = utf8;
 
@@ -37,3 +38,6 @@ INSERT INTO users (name, email, password, is_admin) VALUES (
     '$argon2i$v=19$m=512,t=2,p=2$07qXMsb4P4fQ+p9T6l3rvQ$hWU817VMNDP/E9l21rYOKQ',
     true
 );
+INSERT INTO websites (url, code, message) VALUES ('https://httpstat.us/200', '200', 'Accessible');
+INSERT INTO websites (url, code, message) VALUES ('https://httpstat.us/404', '404', 'Unreachable');
+INSERT INTO websites (url, code, message) VALUES ('https://httpstat.us/500', '500', 'Server Error');

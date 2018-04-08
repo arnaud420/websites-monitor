@@ -5,7 +5,9 @@
 {% endblock %}
 
 {% block body %}
-	<h1>{{ message }} !</h1>
+	<div class="text-center">
+		<h1 class="section">{{ message }} !</h1>
 
-	<a href="{{ url_for('admin') }}">Back to admin</a>
+		<a href="{{ url_for('admin') }}">Back to admin</a>
+	</div>
 {% endblock %}
