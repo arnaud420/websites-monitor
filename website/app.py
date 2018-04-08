@@ -117,8 +117,7 @@ def check_websites_statut():
 						if code != 200:
 
 							now = int(time.time())
-							two_hours = 780
-							#7200
+							two_hours = 7200
 							two_hours_from_last_message = message_time + two_hours
 							website_counter+=1
 							db.execute("UPDATE websites SET counter=('%s') WHERE id = ('%s')" % (website_counter, website_id))
