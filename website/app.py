@@ -207,10 +207,14 @@ def add_website():
 				db = get_db()
 				db.execute("INSERT INTO websites (url, code, message) VALUES ('%s', '%s', '%s')" % (url, code, message))
 				commit()
-				db.close()
-				success_message = "Row added with success"
-				return redirect(url_for('success', message = success_message))
 
+				if db.rowcount == 1:
+					db.close()
+					success_message = "Row added with success"
+					return redirect(url_for('success', message = success_message))
+				else:
+					flash("Failed to insert data")
+					
 			except Exception as error:
 				print('Failed to insert data :', error)
 		else:
