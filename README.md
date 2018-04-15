@@ -1,5 +1,7 @@
 # Websites Monitor
 
+Websites Monitor is an web application for check if ours websites is still in line. 
+
 ## Install database
 
 ```
