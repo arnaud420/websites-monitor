@@ -9,7 +9,6 @@ import time
 import _thread
 
 app = Flask(__name__)
-app.config.from_object('config')
 app.config.from_object('secret_config')
 
 ########################################
